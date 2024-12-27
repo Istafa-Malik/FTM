@@ -1,0 +1,5 @@
+# Ignore the output folder
+/output/
+
+# Ignore the font folder
+/font/
