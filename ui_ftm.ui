@@ -76,9 +76,9 @@ border:none;</string>
     <property name="geometry">
      <rect>
       <x>-20</x>
-      <y>60</y>
-      <width>1024</width>
-      <height>511</height>
+      <y>70</y>
+      <width>1041</width>
+      <height>521</height>
      </rect>
     </property>
     <property name="font">
@@ -147,7 +147,7 @@ color: rgb(154, 153, 150);</string>
 color: rgb(154, 153, 150);</string>
      </property>
      <property name="text">
-      <string> Fatigue Testing Machine</string>
+      <string> Flexural Testing Machine</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -176,7 +176,7 @@ color: rgb(154, 153, 150);</string>
 color: rgb(154, 153, 150);</string>
      </property>
      <property name="text">
-      <string>SFTM-100 simulates physiological conditions to test the durability and reliablity of stents by applying cyclic mechanical stress, ensuring they can withstand long-term use without failure in the body.</string>
+      <string>Flexural Testing Machine (FTM) is a testing simulator for cardiovascular catheters to identify the maximum perpendicular force tolerable by catheters without permanent deformation.</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -381,8 +381,8 @@ background-color:#308DC2
     <widget class="QPushButton" name="button_7">
      <property name="geometry">
       <rect>
-       <x>260</x>
-       <y>410</y>
+       <x>220</x>
+       <y>450</y>
        <width>150</width>
        <height>60</height>
       </rect>
@@ -415,8 +415,8 @@ background-color:rgb(0, 116, 1)
     <widget class="QPushButton" name="button_9">
      <property name="geometry">
       <rect>
-       <x>650</x>
-       <y>410</y>
+       <x>610</x>
+       <y>450</y>
        <width>150</width>
        <height>60</height>
       </rect>
@@ -450,9 +450,9 @@ background-color:rgb(165, 29, 45);
      <property name="geometry">
       <rect>
        <x>13</x>
-       <y>19</y>
+       <y>9</y>
        <width>991</width>
-       <height>331</height>
+       <height>421</height>
       </rect>
      </property>
      <property name="font">
@@ -472,40 +472,11 @@ color: rgb(192, 28, 40);</string>
       <enum>QFrame::Raised</enum>
      </property>
     </widget>
-    <widget class="QLabel" name="label_41">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>420</y>
-       <width>161</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>MS Shell Dlg 2</family>
-       <pointsize>6</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background:none;
-color:rgb(0, 85, 255)
-</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
     <widget class="QPushButton" name="button_8">
      <property name="geometry">
       <rect>
-       <x>460</x>
-       <y>410</y>
+       <x>420</x>
+       <y>450</y>
        <width>150</width>
        <height>60</height>
       </rect>
@@ -533,35 +504,6 @@ background-color:rgb(0, 116, 1)
      </property>
      <property name="text">
       <string>PAUSE</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_55">
-     <property name="geometry">
-      <rect>
-       <x>330</x>
-       <y>420</y>
-       <width>161</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <family>MS Shell Dlg 2</family>
-       <pointsize>6</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background:none;
-color:rgb(0, 85, 255)
-</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </widget>
@@ -654,8 +596,8 @@ background-color:rgb(165, 29, 45);
    <zorder>comboBox</zorder>
    <zorder>label_9</zorder>
    <zorder>screen_3</zorder>
-   <zorder>screen_1</zorder>
    <zorder>screen_2</zorder>
+   <zorder>screen_1</zorder>
   </widget>
  </widget>
  <resources/>
