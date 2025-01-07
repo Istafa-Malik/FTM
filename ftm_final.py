@@ -26,6 +26,20 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         uic.loadUi('ui_ftm.ui',self)
 
+        # Timer for data reception
+        self.data_timer = QTimer()
+        # self.data_timer.timeout.connect(self.rx_data)
+        self.data_timer.timeout.connect(self.read_from_mcu)
+        # self.data_timer.timeout.connect(self.rx_data)
+        # Global buffer and packet size
+        BUFFER = b''  # Buffer to store incoming data
+        PACKET_SIZE = 24  # Expected size of a complete packet
+         # Initialize relevant variables
+        self.is_receiving_data = False  # Track whether data reception has started
+        self.start_time = None  # Track start time
+        self.time_data = []  # List to store time data
+        self.force_data = []  # List to store force data
+
 
         # Initialize figures and canvas for graphs
         self.fig = Figure()
@@ -86,9 +100,7 @@ class MainWindow(QMainWindow):
         self.ser_2 = None
         self.t= 0
 
-        # Timer for data reception
-        self.data_timer = QTimer()
-        self.data_timer.timeout.connect(self.rx_data)
+      
 
         # Timer for updating real-time graph
         self.timer = QTimer()
@@ -204,61 +216,65 @@ class MainWindow(QMainWindow):
     def start_process(self):
         """Start or resume the process of plotting and storing real-time data."""
         try:
+            # Ensure the COM port is selected
             comPort2 = self.comboBox.currentText()
             if not comPort2:
                 QMessageBox.warning(self, 'Error', 'Please select a COM port for MCU.')
                 return
 
+            # Initialize the serial port connection if not already open
             if not self.ser_2 or not self.ser_2.is_open or self.ser_2.port != comPort2:
                 self.ser_2 = serial.Serial(port=comPort2, baudrate=9600, timeout=1)
                 print(f"MCU serial port opened: {self.ser_2.port}")
                 print("The MCU connected successfully.")  # Indicate successful connection
 
-            # Start the data reception timer
-            self.data_timer.start(100)  # Check for data every 100 ms
-            self.update_timer.start(1000)  # Update graph every second
+            # Start the data reception timer (check for data every 100 ms)
+            self.data_timer.start(100)  # You can adjust the interval to your needs
+
+            # Start the graph update timer (update the graph every second)
+            self.data_timer.start(1000)  # Update the graph every second
 
         except Exception as e:
             QMessageBox.critical(self, 'Error', f"An error occurred: {e}")
             print(f"Error: {e}")
 
-    def update_graph_from_mcu(self):
-        """Fetch data from the MCU and update the graph."""
-        try:
-            if self.ser_2 and self.ser_2.is_open:
-                while self.ser_2.in_waiting > 0:
-                    my_data = self.ser_2.read(10)  # Read a fixed number of bytes
+    # def update_graph_from_mcu(self):
+    #     """Fetch data from the MCU and update the graph."""
+    #     try:
+    #         if self.ser_2 and self.ser_2.is_open:
+    #             while self.ser_2.in_waiting > 0:
+    #                 my_data = self.ser_2.read(10)  # Read a fixed number of bytes
 
-                    # Check if the received data matches the expected format
-                    if len(my_data) >= 10:
-                        print("Data received from MCU.")  # Indicate data reception
+    #                 # Check if the received data matches the expected format
+    #                 if len(my_data) >= 10:
+    #                     print("Data received from MCU.")  # Indicate data reception
 
-                        # Check for the stop command
-                        if (my_data[4] == 0x30 and 
-                            my_data[5] == 0x00 and 
-                            my_data[8] == 0x01):
-                            print("Stop command received from MCU.")
-                            self.update_timer.stop()  # Stop the timer
-                            self.ser_2.close()  # Close the serial port
-                            self.label_38.setText("PROCESSING STOPPED")
-                            return  # Exit the function
+    #                     # Check for the stop command
+    #                     if (my_data[4] == 0x30 and 
+    #                         my_data[5] == 0x00 and 
+    #                         my_data[8] == 0x01):
+    #                         print("Stop command received from MCU.")
+    #                         self.update_timer.stop()  # Stop the timer
+    #                         self.ser_2.close()  # Close the serial port
+    #                         self.label_38.setText("PROCESSING STOPPED")
+    #                         return  # Exit the function
 
-                        # Extract force value from the received data
-                        high_byte = my_data[6]
-                        low_byte = my_data[7]
-                        force_value = (high_byte << 8) | low_byte  # Combine high and low byte to get the value
-                        print(f"Force value received: {force_value}")
+    #                     # Extract force value from the received data
+    #                     high_byte = my_data[6]
+    #                     low_byte = my_data[7]
+    #                     force_value = (high_byte << 8) | low_byte  # Combine high and low byte to get the value
+    #                     print(f"Force value received: {force_value}")
 
-                        # Increment time for each data point
-                        self.t += 1
-                        self.time_data.append(self.t)
-                        self.force_data.append(force_value)
+    #                     # Increment time for each data point
+    #                     self.t += 1
+    #                     self.time_data.append(self.t)
+    #                     self.force_data.append(force_value)
 
-                        # Update the graph with the new data
-                        self.update_graph()
+    #                     # Update the graph with the new data
+    #                     self.update_graph()
 
-        except Exception as e:
-            print(f"Error during data reception: {e}")
+    #     except Exception as e:
+    #         print(f"Error during data reception: {e}")
     # def pause_process(self):
     #     """Handle the pause/resume action for the real-time graph."""
     #     if self.is_paused:
@@ -272,26 +288,26 @@ class MainWindow(QMainWindow):
     #         self.button_7.setText("Resume")  # Change button text to "Resume"
     #         self.is_paused = True
     
-    # def stop_process(self):
-    #     """Stop the real-time graph and reset data."""
-    #     # Stop the timer to stop graph updates
-    #     self.timer.stop()
+    def stop_process(self):
+        """Stop the real-time graph and reset data."""
+        # Stop the timer to stop graph updates
+        self.timer.stop()
         
-    #     # Clear the data lists
-    #     self.time_data.clear()
-    #     self.force_data.clear()
+        # Clear the data lists
+        self.time_data.clear()
+        self.force_data.clear()
 
-    #     # Reset the graph
-    #     self.ax.clear()
-    #     self.ax.set(xlabel='Time (min)', ylabel='Force')
-    #     self.ax.grid()
-    #     self.canvas.draw()
+        # Reset the graph
+        self.ax.clear()
+        self.ax.set(xlabel='Time (min)', ylabel='Force')
+        self.ax.grid()
+        self.canvas.draw()
 
-    #     # Update the button text (if needed)
-    #     self.button_7.setText("Pause")  # Reset pause button to "Pause"
-    #     self.is_paused = False  # Ensure graph is not paused after stopping
+        # Update the button text (if needed)
+        self.button_7.setText("Pause")  # Reset pause button to "Pause"
+        self.is_paused = False  # Ensure graph is not paused after stopping
 
-    #     print("Graph stopped and data cleared.")
+        print("Graph stopped and data cleared.")
 
     def scroll_graph(self, value):
         """Adjust the graph view based on scrollbar value."""
@@ -301,47 +317,198 @@ class MainWindow(QMainWindow):
         self.ax.set_xlim(start, end)
         self.canvas.draw()
 
-    def rx_data(self):
-        """Receive data from the MCU."""
+    # def rx_data(self):
+    #     """Receive data from the MCU."""
+    #     try:
+    #         if self.ser_2 and self.ser_2.is_open:
+    #             while self.ser_2.in_waiting > 0:
+    #                 my_data = self.ser_2.read(10)  # Read a fixed number of bytes
+    #                 print(f"Data received from MCU: {my_data}")
+
+    #                 # Check if the received data matches the expected format
+    #                 if len(my_data) >= 10:
+    #                     # Check for the start command
+    #                     # Check for the start command
+    #                     if (my_data[4] == 0x30 and my_data[5] == 0x00 and my_data[8] == 0x00):
+    #                         print("Start command received from MCU.")
+    #                         self.start_process()
+    #                         self.t = 0  # Reset time counter
+    #                         self.time_data.clear()
+    #                         self.force_data.clear()
+    #                         # self.label_38.setText("PROCESSING")
+    #                         print("Proceessing")
+
+    #                     # Check for the stop command
+    #                     elif (my_data[4] == 0x30 and my_data[5] == 0x00 and my_data[8] == 0x01):
+    #                         print("Stop command received from MCU.")
+    #                         self.stop_process()
+    #                         self.data_timer.stop()  # Stop the data reception timer
+    #                         self.ser_2.close()  # Close the serial port
+    #                         # self.label_38.setText("PROCESSING STOPPED")
+    #                         print("Processing Stopped")
+    #                         return  # Exit the function
+
+    #                     # Extract force value from the received data
+    #                     high_byte = my_data[6]
+    #                     low_byte = my_data[7]
+    #                     force_value = (high_byte << 8) | low_byte  # Combine high and low byte to get the value
+    #                     print(f"Force value received: {force_value}")
+
+    #                     # Increment time for each data point
+    #                     self.t += 1
+    #                     self.time_data.append(self.t)
+    #                     self.force_data.append(force_value)
+
+    #     except Exception as e:
+    #         print(f"Error during data reception: {e}")
+    
+    # 
+    # def read_from_mcu(self):
+    #     """Read data from the MCU and pass it to the rx_data method."""
+    #     if self.ser_2 and self.ser_2.is_open:
+    #         try:
+    #             # Read 9 bytes from the serial port (adjust based on your data format)
+    #             buffer = self.ser_2.read(9)
+                
+    #             if len(buffer) == 9:  # Ensure we received the expected 9 bytes of data
+    #                 self.rx_data(buffer)  # Pass the buffer to rx_data
+    #                 print("the data from mcu is received")
+    #             else:
+    #                 print("Received incomplete or invalid data.")
+    #         except Exception as e:
+    #             print(f"Error reading from MCU: {e}")
+    # def read_from_mcu(serial_port):
+    #     """
+    #     Reads data from the MCU and passes it to the rx_data function.
+    #     """
+    #     if serial_port.in_waiting:  # Check if data is available to read
+    #         buffer_chunk = serial_port.read(serial_port.in_waiting)  # Read available data
+    #         rx_data(buffer_chunk)  # Pass the chunk to rx_data
+
+    def read_from_mcu(self):
+        """Read data from the MCU and pass it to the rx_data method."""
+        if self.ser_2 and self.ser_2.is_open:
+            try:
+                # Check if there is data available to read
+                if self.ser_2.in_waiting > 0:
+                    # Read all available data from the serial port
+                    data_chunk = self.ser_2.read(self.ser_2.in_waiting)
+                    
+                    # Append the new data to an internal buffer
+                    if not hasattr(self, 'buffer'):
+                        self.buffer = b''  # Initialize the buffer if not present
+                    
+                    self.buffer += data_chunk  # Append the received chunk to the buffer
+
+                    # Process complete packets (assume packets are 9 bytes long)
+                    while len(self.buffer) >= 9:
+                        packet = self.buffer[:9]  # Extract one complete packet
+                        self.buffer = self.buffer[9:]  # Remove the processed packet from the buffer
+
+                        # Pass the complete packet to rx_data
+                        self.rx_data(packet)
+                        print(f"Complete packet received and processed: {packet}")
+            except Exception as e:
+                print(f"Error reading from MCU: {e}")
+
+    def rx_data(buffer_chunk):
+        """
+        Processes incoming buffer chunks, extracts complete packets, and handles them.
+        """
+        global BUFFER
+        # Append the received chunk to the global buffer
+        BUFFER += buffer_chunk
+
+        # Debug: Print the received chunk
+        print(f"Received chunk: {buffer_chunk}")
+
+        # Process the buffer for complete packets
+        process_buffer()
+
+    def process_buffer():
+        """
+        Processes the global buffer to extract and handle complete packets.
+        """
+        global BUFFER
+        while len(BUFFER) >= PACKET_SIZE:
+            # Extract one complete packet
+            packet = BUFFER[:PACKET_SIZE]
+            # Remove the processed packet from the buffer
+            BUFFER = BUFFER[PACKET_SIZE:]
+
+            # Debug: Print the complete packet
+            print(f"Complete packet received: {packet}")
+
+            # Handle the packet
+            handle_packet(packet)
+
+    def handle_packet(packet):
+        """
+        Processes a single packet by decoding it and checking for specific commands.
+        """
         try:
-            if self.ser_2 and self.ser_2.is_open:
-                while self.ser_2.in_waiting > 0:
-                    my_data = self.ser_2.read(10)  # Read a fixed number of bytes
-                    print(f"Data received from MCU: {my_data}")
+            # Decode the packet and strip unnecessary characters
+            data = packet.decode('utf-8', errors='ignore').strip()
 
-                    # Check if the received data matches the expected format
-                    if len(my_data) >= 10:
-                        # Check for the start command
-                        # Check for the start command
-                        if (my_data[4] == 0x30 and my_data[5] == 0x00 and my_data[8] == 0x00):
-                            print("Start command received from MCU.")
-                            self.start_process()
-                            self.t = 0  # Reset time counter
-                            self.time_data.clear()
-                            self.force_data.clear()
-                            self.label_38.setText("PROCESSING")
-
-                        # Check for the stop command
-                        elif (my_data[4] == 0x30 and my_data[5] == 0x00 and my_data[8] == 0x01):
-                            print("Stop command received from MCU.")
-                            self.data_timer.stop()  # Stop the data reception timer
-                            self.ser_2.close()  # Close the serial port
-                            self.label_38.setText("PROCESSING STOPPED")
-                            return  # Exit the function
-
-                        # Extract force value from the received data
-                        high_byte = my_data[6]
-                        low_byte = my_data[7]
-                        force_value = (high_byte << 8) | low_byte  # Combine high and low byte to get the value
-                        print(f"Force value received: {force_value}")
-
-                        # Increment time for each data point
-                        self.t += 1
-                        self.time_data.append(self.t)
-                        self.force_data.append(force_value)
-
+            # Check for specific commands
+            if data == "START":
+                print("Start command received.")
+                # Add your start logic here
+            elif data == "STOP":
+                print("Stop command received.")
+                # Add your stop logic here
+            else:
+                print(f"Data packet: {packet}")
+                # Add logic to process other data here
         except Exception as e:
-            print(f"Error during data reception: {e}")
+            print(f"Error processing packet: {e}")
+    # def rx_data(self, buffer):
+    #     print(f"Received buffer: {buffer}")
+    #     # Check if the start command is received
+    #     if buffer[4] == 0x30 and buffer[5] == 0x00 and buffer[8] == 0x00:
+    #         if not self.is_receiving_data:
+    #             # Start receiving data
+    #             self.is_receiving_data = True
+    #             self.start_time = time.time()  # Record the start time
+    #             print("Starting data collection from MCU...")
+
+    #     # Check if the stop command is received
+    #     elif buffer[4] == 0x30 and buffer[5] == 0x00 and buffer[8] == 0x01:
+    #         if self.is_receiving_data:
+    #             # Stop receiving data
+    #             self.is_receiving_data = False
+    #             print("Stopping data collection from MCU...")
+    #             self.plot_graph()  # Plot the graph after stopping
+
+    #     # Process the force data (buffer[6] and buffer[7] are the force data)
+    #     if self.is_receiving_data:
+    #         # Combine the high byte and low byte to form the force value
+    #         force_value = (buffer[6] << 8) | buffer[7]
+    #         current_time = time.time() - self.start_time  # Calculate real-time since start
+            
+    #         # Store the real-time value and force value
+    #         self.time_data.append(current_time)  # Store the real-time value
+    #         self.force_data.append(force_value)  # Store the force value
+
+    #         # Display data in terminal (force and real-time)
+    #         print(f"Time: {current_time:.2f} s | Force: {force_value} N")
+
+
+    def update_graph(self, time_data, force_data):
+        """Update the real-time graph with the latest data."""
+        try:
+            self.ax.clear()  # Clear previous graph data
+            self.ax.plot(time_data, force_data, label="Force vs. Time", color="blue")
+            self.ax.set_xlabel("Time (s)")
+            self.ax.set_ylabel("Force")
+            self.ax.set_title("Real-Time Force Data")
+            self.ax.grid(True)
+            self.ax.legend()
+            self.canvas.draw()  # Refresh the graph
+            print("Graph updated with the latest data.")
+        except Exception as e:
+            print(f"Error updating graph: {e}")
+
 
 
     def stop_real_time_plotting(self):
@@ -352,18 +519,7 @@ class MainWindow(QMainWindow):
             self.timer_process.stop()  # Stop the timer for real-time updates
 
 
-    def update_graph(self):
-        """Update the graph with real-time data."""
-        if len(self.time_data) > 0:
-            # Update plot data
-            self.line.set_data(self.time_data, self.force_data)
-            self.ax.relim()
-            self.ax.autoscale_view()
-
-            # Update scrollbar range
-            max_time = self.time_data[-1]
-            self.scrollbar.setMaximum(max(0, max_time - 10))  # Adjust scrollbar range
-
+    
     def store_real_time_data(self, csv_file):
         """Store the real-time data (time and force) into a CSV file."""
         try:
@@ -403,10 +559,7 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Failed to load the file. Error: {str(e)}")
     
-    # def set_serial(self, index):
-    #     """Handle serial port selection."""
-    #     selected_port = self.comboBox.itemText(index)
-    #     print(f"Selected COM port: {selected_port}")
+   
     
     def set_serial(self):
         if self.ser != None:
