@@ -28,8 +28,8 @@ class MainWindow(QMainWindow):
 
         # Timer for data reception
         self.data_timer = QTimer()
-        # self.data_timer.timeout.connect(self.rx_data)
-        self.data_timer.timeout.connect(self.read_from_mcu)
+        self.data_timer.timeout.connect(self.rx_data)
+        #self.data_timer.timeout.connect(self.read_from_mcu)
         # self.data_timer.timeout.connect(self.rx_data)
         # Global buffer and packet size
         BUFFER = b''  # Buffer to store incoming data
@@ -317,50 +317,50 @@ class MainWindow(QMainWindow):
         self.ax.set_xlim(start, end)
         self.canvas.draw()
 
-    # def rx_data(self):
-    #     """Receive data from the MCU."""
-    #     try:
-    #         if self.ser_2 and self.ser_2.is_open:
-    #             while self.ser_2.in_waiting > 0:
-    #                 my_data = self.ser_2.read(10)  # Read a fixed number of bytes
-    #                 print(f"Data received from MCU: {my_data}")
+    def rx_data(self):
+        """Receive data from the MCU."""
+        try:
+            if self.ser_2 and self.ser_2.is_open:
+                while self.ser_2.in_waiting > 0:
+                    my_data = self.ser_2.read(10)  # Read a fixed number of bytes
+                    print(f"Data received from MCU: {my_data}")
 
-    #                 # Check if the received data matches the expected format
-    #                 if len(my_data) >= 10:
-    #                     # Check for the start command
-    #                     # Check for the start command
-    #                     if (my_data[4] == 0x30 and my_data[5] == 0x00 and my_data[8] == 0x00):
-    #                         print("Start command received from MCU.")
-    #                         self.start_process()
-    #                         self.t = 0  # Reset time counter
-    #                         self.time_data.clear()
-    #                         self.force_data.clear()
-    #                         # self.label_38.setText("PROCESSING")
-    #                         print("Proceessing")
+                    # Check if the received data matches the expected format
+                    if len(my_data) >= 10:
+                        # Check for the start command
+                        # Check for the start command
+                        if (my_data[4] == 0x30 and my_data[5] == 0x00 and my_data[8] == 0x00):
+                            print("Start command received from MCU.")
+                            self.start_process()
+                            self.t = 0  # Reset time counter
+                            self.time_data.clear()
+                            self.force_data.clear()
+                            # self.label_38.setText("PROCESSING")
+                            print("Proceessing")
 
-    #                     # Check for the stop command
-    #                     elif (my_data[4] == 0x30 and my_data[5] == 0x00 and my_data[8] == 0x01):
-    #                         print("Stop command received from MCU.")
-    #                         self.stop_process()
-    #                         self.data_timer.stop()  # Stop the data reception timer
-    #                         self.ser_2.close()  # Close the serial port
-    #                         # self.label_38.setText("PROCESSING STOPPED")
-    #                         print("Processing Stopped")
-    #                         return  # Exit the function
+                        # Check for the stop command
+                        elif (my_data[4] == 0x30 and my_data[5] == 0x00 and my_data[8] == 0x01):
+                            print("Stop command received from MCU.")
+                            self.stop_process()
+                            self.data_timer.stop()  # Stop the data reception timer
+                            self.ser_2.close()  # Close the serial port
+                            # self.label_38.setText("PROCESSING STOPPED")
+                            print("Processing Stopped")
+                            return  # Exit the function
 
-    #                     # Extract force value from the received data
-    #                     high_byte = my_data[6]
-    #                     low_byte = my_data[7]
-    #                     force_value = (high_byte << 8) | low_byte  # Combine high and low byte to get the value
-    #                     print(f"Force value received: {force_value}")
+                        # Extract force value from the received data
+                        high_byte = my_data[6]
+                        low_byte = my_data[7]
+                        force_value = (high_byte << 8) | low_byte  # Combine high and low byte to get the value
+                        print(f"Force value received: {force_value}")
 
-    #                     # Increment time for each data point
-    #                     self.t += 1
-    #                     self.time_data.append(self.t)
-    #                     self.force_data.append(force_value)
+                        # Increment time for each data point
+                        self.t += 1
+                        self.time_data.append(self.t)
+                        self.force_data.append(force_value)
 
-    #     except Exception as e:
-    #         print(f"Error during data reception: {e}")
+        except Exception as e:
+            print(f"Error during data reception: {e}")
     
     # 
     # def read_from_mcu(self):
@@ -385,84 +385,84 @@ class MainWindow(QMainWindow):
     #         buffer_chunk = serial_port.read(serial_port.in_waiting)  # Read available data
     #         rx_data(buffer_chunk)  # Pass the chunk to rx_data
 
-    def read_from_mcu(self):
-        """Read data from the MCU and pass it to the rx_data method."""
-        if self.ser_2 and self.ser_2.is_open:
-            try:
-                # Check if there is data available to read
-                if self.ser_2.in_waiting > 0:
-                    # Read all available data from the serial port
-                    data_chunk = self.ser_2.read(self.ser_2.in_waiting)
+    # def read_from_mcu(self):
+    #     """Read data from the MCU and pass it to the rx_data method."""
+    #     if self.ser_2 and self.ser_2.is_open:
+    #         try:
+    #             # Check if there is data available to read
+    #             if self.ser_2.in_waiting > 0:
+    #                 # Read all available data from the serial port
+    #                 data_chunk = self.ser_2.read(self.ser_2.in_waiting)
                     
-                    # Append the new data to an internal buffer
-                    if not hasattr(self, 'buffer'):
-                        self.buffer = b''  # Initialize the buffer if not present
+    #                 # Append the new data to an internal buffer
+    #                 if not hasattr(self, 'buffer'):
+    #                     self.buffer = b''  # Initialize the buffer if not present
                     
-                    self.buffer += data_chunk  # Append the received chunk to the buffer
+    #                 self.buffer += data_chunk  # Append the received chunk to the buffer
 
-                    # Process complete packets (assume packets are 9 bytes long)
-                    while len(self.buffer) >= 9:
-                        packet = self.buffer[:9]  # Extract one complete packet
-                        self.buffer = self.buffer[9:]  # Remove the processed packet from the buffer
+    #                 # Process complete packets (assume packets are 9 bytes long)
+    #                 while len(self.buffer) >= 9:
+    #                     packet = self.buffer[:9]  # Extract one complete packet
+    #                     self.buffer = self.buffer[9:]  # Remove the processed packet from the buffer
 
-                        # Pass the complete packet to rx_data
-                        self.rx_data(packet)
-                        print(f"Complete packet received and processed: {packet}")
-            except Exception as e:
-                print(f"Error reading from MCU: {e}")
+    #                     # Pass the complete packet to rx_data
+    #                     self.rx_data(packet)
+    #                     print(f"Complete packet received and processed: {packet}")
+    #         except Exception as e:
+    #             print(f"Error reading from MCU: {e}")
 
-    def rx_data(buffer_chunk):
-        """
-        Processes incoming buffer chunks, extracts complete packets, and handles them.
-        """
-        global BUFFER
-        # Append the received chunk to the global buffer
-        BUFFER += buffer_chunk
+    # def rx_data(buffer_chunk):
+    #     """
+    #     Processes incoming buffer chunks, extracts complete packets, and handles them.
+    #     """
+    #     global BUFFER
+    #     # Append the received chunk to the global buffer
+    #     BUFFER += buffer_chunk
 
-        # Debug: Print the received chunk
-        print(f"Received chunk: {buffer_chunk}")
+    #     # Debug: Print the received chunk
+    #     print(f"Received chunk: {buffer_chunk}")
 
-        # Process the buffer for complete packets
-        process_buffer()
+    #     # Process the buffer for complete packets
+    #     self.process_buffer()
 
-    def process_buffer():
-        """
-        Processes the global buffer to extract and handle complete packets.
-        """
-        global BUFFER
-        while len(BUFFER) >= PACKET_SIZE:
-            # Extract one complete packet
-            packet = BUFFER[:PACKET_SIZE]
-            # Remove the processed packet from the buffer
-            BUFFER = BUFFER[PACKET_SIZE:]
+    # def process_buffer():
+    #     """
+    #     Processes the global buffer to extract and handle complete packets.
+    #     """
+    #     global BUFFER
+    #     while len(BUFFER) >= PACKET_SIZE:
+    #         # Extract one complete packet
+    #         packet = BUFFER[:PACKET_SIZE]
+    #         # Remove the processed packet from the buffer
+    #         BUFFER = BUFFER[PACKET_SIZE:]
 
-            # Debug: Print the complete packet
-            print(f"Complete packet received: {packet}")
+    #         # Debug: Print the complete packet
+    #         print(f"Complete packet received: {packet}")
 
-            # Handle the packet
-            handle_packet(packet)
+    #         # Handle the packet
+    #         self.handle_packet(packet)
 
-    def handle_packet(packet):
-        """
-        Processes a single packet by decoding it and checking for specific commands.
-        """
-        try:
-            # Decode the packet and strip unnecessary characters
-            data = packet.decode('utf-8', errors='ignore').strip()
+    # def handle_packet(packet):
+    #     """
+    #     Processes a single packet by decoding it and checking for specific commands.
+    #     """
+    #     try:
+    #         # Decode the packet and strip unnecessary characters
+    #         data = packet.decode('utf-8', errors='ignore').strip()
 
-            # Check for specific commands
-            if data == "START":
-                print("Start command received.")
-                # Add your start logic here
-            elif data == "STOP":
-                print("Stop command received.")
-                # Add your stop logic here
-            else:
-                print(f"Data packet: {packet}")
-                # Add logic to process other data here
-        except Exception as e:
-            print(f"Error processing packet: {e}")
-    # def rx_data(self, buffer):
+    #         # Check for specific commands
+    #         if data == "START":
+    #             print("Start command received.")
+    #             # Add your start logic here
+    #         elif data == "STOP":
+    #             print("Stop command received.")
+    #             # Add your stop logic here
+    #         else:
+    #             print(f"Data packet: {packet}")
+    #             # Add logic to process other data here
+    #     except Exception as e:
+    #         print(f"Error processing packet: {e}")
+    # # def rx_data(self, buffer):
     #     print(f"Received buffer: {buffer}")
     #     # Check if the start command is received
     #     if buffer[4] == 0x30 and buffer[5] == 0x00 and buffer[8] == 0x00:
