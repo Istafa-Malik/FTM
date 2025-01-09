@@ -599,8 +599,8 @@ background-color:rgb(165, 29, 45);
    <zorder>comboBox</zorder>
    <zorder>label_9</zorder>
    <zorder>screen_3</zorder>
-   <zorder>screen_2</zorder>
    <zorder>screen_1</zorder>
+   <zorder>screen_2</zorder>
   </widget>
  </widget>
  <resources/>
