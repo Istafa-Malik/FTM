@@ -169,7 +169,7 @@ class MainWindow(QMainWindow):
         self.screen_3.hide()
         self.screen_1.show()
         self.setStyleSheet("background-color:rgb(250,250,250);")
-        self.label_A.setPixmap(QPixmap(base_path+"/rsc/rsc2.png"))
+        self.label_A.setPixmap(QPixmap(base_path+"C:\Projects\FTM\rsc2.png"))
         # self.label_6.hide()
         layout = QVBoxLayout()
         button_2 = QPushButton("screen_2")
